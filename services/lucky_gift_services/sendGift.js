@@ -19,19 +19,17 @@ socketclient.on('connect', () => {
     console.error('Connection timeout');
   });
   
-const sendGift = async (data, io, socket) => {
-    const { roomId, giftName, giftImageUrl, giftPrice, recieverId, senderId, type  } = data;
+const sendGift = async (data, io, socket, baseIO) => {
+    const { roomId, giftName, giftImageUrl, giftPrice, recieverId, senderId, type , roomOwner } = data;
+    if (!roomId || !giftName || !giftImageUrl || !giftPrice || !recieverId || !senderId || !type || !roomOwner) {
+        return { status: 'error', message: 'Missing required fields' };
+    }
 
     const configdata  = await getConfig();
     const dealerProfitPercentage = configdata.dealerProfitPercentage;
     const dealerProfitratio = dealerProfitPercentage / 100;
     
-
-
-
-   
-
-    const response = new Promise((resolve, reject) => {
+    const response = new Promise(async (resolve, reject) => {
 
         const sid = senderId;
         const rid = recieverId;
@@ -45,44 +43,53 @@ const sendGift = async (data, io, socket) => {
              "roomId": roomId,
               "roomOwner": roomOwner,
                "type": type};
+              //console.log(datatosocket);
 
              
                 
-        socketclient.emit   ( 'luckygiftTransaction', datatosocket, function (ackData) {
-            //console.log('Acknowledgment from server:', ackData);
+        await socketclient.emit   ( 'luckygiftTransaction', datatosocket, function (ackData) {
+            // console.log('Acknowledgment from server:', ackData);
+            // console.log('Acknowledgment from server:', ackData);
             if (ackData["success_id"]==undefined){
                 reject(new Error("Insufficient balance"));
                 return
             }
 
 
-            configdata.totalDealerCommision += giftPrice * dealerProfitPercentage / 100;
-            configdata.totalStreamerCommision += giftPrice * (100 - dealerProfitPercentage) / 100;
+            configdata.totalDealerCommision += giftPrice * 0.7;
+            configdata.totalStreamerCommision += giftPrice *0.3;
             configdata.totalSentGifts +=  giftPrice;
             configdata.save().then(() => {
-                console.log('Config updated');
+                //console.log('Config updated');
 
                 const random_multiplier = calculateRewardMultiplier(configdata.multiplierProbabilities) // Random number between 1 and 10
                  
                 const iseligibleforlottery = Math.floor(Math.random() * 100) < 10; //10 percent chance of winning lottery
                 if (iseligibleforlottery) {
-                    if ((configdata.totalDealerCommision / configdata.totalSentGifts)*100 > (dealerProfitPercentage ) &&
+                    console.log("eligible for lottery");
+
+                             if (((configdata.totalDealerCommision / configdata.totalSentGifts)*100)> (dealerProfitPercentage ) &&
                 (configdata.totalDealerCommision > (dealerProfitratio*configdata.totalSentGifts + (giftPrice * random_multiplier)))){
+                    console.log("eligible for lottery inside");
 
                     configdata.totalLotteryPrize += giftPrice * random_multiplier;
                     configdata.totalDealerCommision -= giftPrice * random_multiplier;
-                    configdata.save().then(() => {
+                    configdata.save().then(async () => {
+                        console.log('Config updated');
                         const datatolotteryserver = { "amount": giftPrice * random_multiplier, "winner": senderId, "roomId": roomId, "roomOwner": roomOwner, "type": type, "giftName": giftName, "giftUrl": giftImageUrl};
 
-                        socketclient.emit('luckygift_lottery_transaction', datatolotteryserver, function (ackData){
-                            if (ackData["success"]==undefined){
+                       await socketclient.emit('luckygift_lottery_transaction', datatolotteryserver, function (ackData){
+                            if (ackData["success_id"]==undefined){
                                 reject(new Error("Lottery failed"));
                                 return
                             }
+                            console.log('Acknowledgment from server:', ackData);
+                            
                             resolve({ 
                                 "status":"success", 
                                 "win": true,
                                 "multiplier": random_multiplier, 
+                                "giftPrice": giftPrice,
                                 "lotteryPrize": giftPrice * random_multiplier, 
                                 "giftName": giftName,
                                 "giftUrl":giftImageUrl,
@@ -91,6 +98,21 @@ const sendGift = async (data, io, socket) => {
                                 "type": type,
                                 "winnerId": senderId
                                });
+
+                               baseIO.of("/general").emit('recieveGift', { 
+                                "status":"success", 
+                                "win": true,
+                                "multiplier": random_multiplier, 
+                                "giftPrice": giftPrice,
+                                "lotteryPrize": giftPrice * random_multiplier, 
+                                "giftName": giftName,
+                                "giftUrl":giftImageUrl,
+                                "roomId": roomId,
+                                "roomOwner": roomOwner,
+                                "type": type,
+                                "winnerId": senderId
+                               });
+
 
                         } );
 
@@ -102,12 +124,55 @@ const sendGift = async (data, io, socket) => {
                     });
 
                     }
+                    else{
+                        resolve({ 
+                            "status":"success", 
+                            "win": false,
+                            "multiplier": random_multiplier, 
+                            "lotteryPrize": 0, 
+                            "giftPrice": giftPrice,
+                            "giftName": giftName,
+                            "giftUrl":giftImageUrl,
+                            "roomId": roomId,
+                            "roomOwner": roomOwner,
+                            "type": type,
+                            "winnerId": senderId
+                           });
+
+                           baseIO.of("/general").emit('recieveGift', { 
+                            "status":"success", 
+                            "win": false,
+                            "multiplier": random_multiplier, 
+                            "giftPrice": giftPrice,
+                            "lotteryPrize": 0, 
+                            "giftName": giftName,
+                            "giftUrl":giftImageUrl,
+                            "roomId": roomId,
+                            "roomOwner": roomOwner,
+                            "type": type,
+                            "winnerId": senderId
+                           });
+                    }
                 }
                 else{
                     resolve({ 
                         "status":"success", 
                         "win": false,
                         "multiplier": random_multiplier, 
+                        "giftPrice": giftPrice,
+                        "lotteryPrize": 0, 
+                        "giftName": giftName,
+                        "giftUrl":giftImageUrl,
+                        "roomId": roomId,
+                        "roomOwner": roomOwner,
+                        "type": type,
+                        "winnerId": senderId
+                       });
+                       baseIO.of("/general").emit('recieveGift', { 
+                        "status":"success", 
+                        "win": false,
+                        "multiplier": random_multiplier, 
+                        "giftPrice": giftPrice,
                         "lotteryPrize": 0, 
                         "giftName": giftName,
                         "giftUrl":giftImageUrl,

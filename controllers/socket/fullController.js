@@ -2,8 +2,9 @@ const { fullSocketHandler } = require("../../handlers/fullSocketHandler");
 
 
 class FullSocketController{
-    constructor(io){
+    constructor(io, baseIO){
         this.io = io;
+        this.baseIO = baseIO;
         io.on("connection", (socket)=>{
            if (!socket.handshake.query.userId || !socket.handshake.query.name || socket.handshake.query.userId === 'null' || socket.handshake.query.name === 'null'){
 
@@ -20,7 +21,7 @@ class FullSocketController{
             socket.profilePic = profilePic;
             socket.join(userId);
             
-            fullSocketHandler(io, socket, userId);
+            fullSocketHandler(io, socket, userId, baseIO);
             
 
 

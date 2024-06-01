@@ -31,7 +31,7 @@ const generalNameSpace = io.of('/general');
 const baseNameSpace = io.of('/');
 
 
-const fullSocketController = new FullSocketController(fullNameSpace);
+const fullSocketController = new FullSocketController(fullNameSpace, io);
 
 const generalSocketController = new GeneralSocketController(generalNameSpace);  
 

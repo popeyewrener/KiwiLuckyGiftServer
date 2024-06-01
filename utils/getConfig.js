@@ -38,12 +38,12 @@ function calculateRewardMultiplier(multiplierProbabilities) {
     for (const [multiplier, probability] of multiplierProbabilities) {
       cumulativeProbability += probability;
       if (randomValue <= cumulativeProbability) {
-        return multiplier;
+        return parseInt(multiplier.replace("x", ""), 10);
       }
     }
   
     // Should never reach here (unless probabilities don't add up to 100)
-    return 'x1'; // Default to x1 in case of error
+    return 1; // Default to x1 in case of error
   }
 module.exports = { getConfig, calculateRewardMultiplier };
 
