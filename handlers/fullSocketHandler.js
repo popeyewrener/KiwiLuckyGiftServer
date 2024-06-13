@@ -25,10 +25,13 @@ fullSocketHandler = (io, socket, userId, baseIO)=>{
     })
 
     socket.on("luckygiftTransaction", async (data, callback)=>{
+        console.log("luckygiftTransaction");
+        console.log(data);
        try{
         const response = await sendGift(data, io, socket, baseIO);
+        console.log(response);
 
-        callback(response);
+        callback(JSON.stringify(response) );
        }
        catch(err){
            console.log(err);

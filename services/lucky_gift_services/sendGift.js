@@ -43,12 +43,13 @@ const sendGift = async (data, io, socket, baseIO) => {
              "roomId": roomId,
               "roomOwner": roomOwner,
                "type": type};
-              //console.log(datatosocket);
+              console.log(datatosocket);
 
              
                 
         await socketclient.emit   ( 'luckygiftTransaction', datatosocket, function (ackData) {
-            // console.log('Acknowledgment from server:', ackData);
+
+             console.log('Acknowledgment from server:', ackData);
             // console.log('Acknowledgment from server:', ackData);
             if (ackData["success_id"]==undefined){
                 reject(new Error("Insufficient balance"));
@@ -60,7 +61,7 @@ const sendGift = async (data, io, socket, baseIO) => {
             configdata.totalStreamerCommision += giftPrice *0.3;
             configdata.totalSentGifts +=  giftPrice;
             configdata.save().then(() => {
-                //console.log('Config updated');
+                console.log('Config updated');
 
                 const random_multiplier = calculateRewardMultiplier(configdata.multiplierProbabilities) // Random number between 1 and 10
                  
@@ -96,22 +97,26 @@ const sendGift = async (data, io, socket, baseIO) => {
                                 "roomId": roomId,
                                 "roomOwner": roomOwner,
                                 "type": type,
-                                "winnerId": senderId
+                                "winnerId": senderId,
+                                "senderName": socket.name
                                });
 
-                               baseIO.of("/general").emit('recieveGift', { 
-                                "status":"success", 
-                                "win": true,
-                                "multiplier": random_multiplier, 
-                                "giftPrice": giftPrice,
-                                "lotteryPrize": giftPrice * random_multiplier, 
-                                "giftName": giftName,
-                                "giftUrl":giftImageUrl,
-                                "roomId": roomId,
-                                "roomOwner": roomOwner,
-                                "type": type,
-                                "winnerId": senderId
-                               });
+                               baseIO.of("/general").emit('lucky_gift_receive',
+                                JSON.stringify( { 
+                                    "status":"success", 
+                                    "win": true,
+                                    "multiplier": random_multiplier, 
+                                    "giftPrice": giftPrice,
+                                    "lotteryPrize": giftPrice * random_multiplier, 
+                                    "giftName": giftName,
+                                    "giftUrl":giftImageUrl,
+                                    "roomId": roomId,
+                                    "roomOwner": roomOwner,
+                                    "type": type,
+                                    "winnerId": senderId,
+                                    "senderName": socket.name
+                                   })
+                               );
 
 
                         } );
@@ -136,10 +141,12 @@ const sendGift = async (data, io, socket, baseIO) => {
                             "roomId": roomId,
                             "roomOwner": roomOwner,
                             "type": type,
-                            "winnerId": senderId
+                            "winnerId": senderId,
+                            "senderName": socket.name
                            });
 
-                           baseIO.of("/general").emit('recieveGift', { 
+                           baseIO.of("/general").emit('lucky_gift_receive',
+                           JSON.stringify({ 
                             "status":"success", 
                             "win": false,
                             "multiplier": random_multiplier, 
@@ -150,8 +157,11 @@ const sendGift = async (data, io, socket, baseIO) => {
                             "roomId": roomId,
                             "roomOwner": roomOwner,
                             "type": type,
-                            "winnerId": senderId
-                           });
+                            "winnerId": senderId,
+                            "senderName": socket.name
+                           })
+
+                           );
                     }
                 }
                 else{
@@ -166,21 +176,25 @@ const sendGift = async (data, io, socket, baseIO) => {
                         "roomId": roomId,
                         "roomOwner": roomOwner,
                         "type": type,
-                        "winnerId": senderId
+                        "winnerId": senderId,
+                        "senderName": socket.name
                        });
-                       baseIO.of("/general").emit('recieveGift', { 
-                        "status":"success", 
-                        "win": false,
-                        "multiplier": random_multiplier, 
-                        "giftPrice": giftPrice,
-                        "lotteryPrize": 0, 
-                        "giftName": giftName,
-                        "giftUrl":giftImageUrl,
-                        "roomId": roomId,
-                        "roomOwner": roomOwner,
-                        "type": type,
-                        "winnerId": senderId
-                       });
+                       baseIO.of("/general").emit('lucky_gift_receive', 
+                        JSON.stringify({ 
+                            "status":"success", 
+                            "win": false,
+                            "multiplier": random_multiplier, 
+                            "giftPrice": giftPrice,
+                            "lotteryPrize": 0, 
+                            "giftName": giftName,
+                            "giftUrl":giftImageUrl,
+                            "roomId": roomId,
+                            "roomOwner": roomOwner,
+                            "type": type,
+                            "winnerId": senderId,
+                            "senderName": socket.name
+                           })
+                       );
                 }
 
 

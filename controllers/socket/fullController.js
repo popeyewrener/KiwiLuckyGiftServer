@@ -20,13 +20,14 @@ class FullSocketController{
             socket.name = name;
             socket.profilePic = profilePic;
             socket.join(userId);
+            console.log("Full namespace user connected");
             
             fullSocketHandler(io, socket, userId, baseIO);
             
 
 
             socket.on('disconnect', () => {
-                console.log('user disconnected');
+                console.log('Full namespace user disconnected');
             });
         })
         
