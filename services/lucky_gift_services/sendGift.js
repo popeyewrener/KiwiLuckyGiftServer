@@ -77,7 +77,7 @@ const sendGift = async (data, io, socket, baseIO) => {
 
                 const random_multiplier = calculateRewardMultiplier(configdata.multiplierProbabilities) // Random number between 1 and 10
                  
-                const iseligibleforlottery = Math.floor(Math.random() * 100) < 20; //10 percent chance of winning lottery
+                const iseligibleforlottery = Math.floor(Math.random() * 100) < 25; //20 percent chance of winning lottery
                 if (iseligibleforlottery) {
                     console.log("eligible for lottery");
 
