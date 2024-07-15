@@ -23,14 +23,7 @@ const sendGift = async (data, io, socket, baseIO) => {
     const { roomId, giftName, giftImageUrl, giftPrice, recieverId, senderId, type , roomOwner } = data;
     if (!roomId || !giftName || !giftImageUrl || !giftPrice || !recieverId || !senderId || !type || !roomOwner) {
         const missingFields = [];
-        if (!roomId) missingFields.push('roomId');
-        if (!giftName) missingFields.push('giftName');
-        if (!giftImageUrl) missingFields.push('giftImageUrl');
-        if (!giftPrice) missingFields.push('giftPrice');
-        if (!recieverId) missingFields.push('recieverId');
-        if (!senderId) missingFields.push('senderId');
-        if (!type) missingFields.push('type');
-        if (!roomOwner) missingFields.push('roomOwner');
+        
 
         console.error('Missing required fields:', missingFields);
 
