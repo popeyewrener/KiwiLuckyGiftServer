@@ -22,6 +22,18 @@ socketclient.on('connect', () => {
 const sendGift = async (data, io, socket, baseIO) => {
     const { roomId, giftName, giftImageUrl, giftPrice, recieverId, senderId, type , roomOwner } = data;
     if (!roomId || !giftName || !giftImageUrl || !giftPrice || !recieverId || !senderId || !type || !roomOwner) {
+        const missingFields = [];
+        if (!roomId) missingFields.push('roomId');
+        if (!giftName) missingFields.push('giftName');
+        if (!giftImageUrl) missingFields.push('giftImageUrl');
+        if (!giftPrice) missingFields.push('giftPrice');
+        if (!recieverId) missingFields.push('recieverId');
+        if (!senderId) missingFields.push('senderId');
+        if (!type) missingFields.push('type');
+        if (!roomOwner) missingFields.push('roomOwner');
+
+        console.error('Missing required fields:', missingFields);
+
         return { status: 'error', message: 'Missing required fields' };
     }
 
@@ -65,7 +77,7 @@ const sendGift = async (data, io, socket, baseIO) => {
 
                 const random_multiplier = calculateRewardMultiplier(configdata.multiplierProbabilities) // Random number between 1 and 10
                  
-                const iseligibleforlottery = Math.floor(Math.random() * 100) < 10; //10 percent chance of winning lottery
+                const iseligibleforlottery = Math.floor(Math.random() * 100) < 20; //10 percent chance of winning lottery
                 if (iseligibleforlottery) {
                     console.log("eligible for lottery");
 
