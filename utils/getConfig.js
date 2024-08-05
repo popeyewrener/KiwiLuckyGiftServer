@@ -13,10 +13,15 @@ async function getConfig() {
             config = {
                 dealerProfitPercentage: 30, // Example default value
                 multiplierProbabilities: new Map([
-                    ['x1', 50],
-                    ['x2', 30], // Example default probabilities
+                    ['x1', 40],
+                    ['x2', 25],
                     ['x3', 15],
-                    ['x5', 5]
+                    ['x5', 10],
+                    ['x10', 5],
+                    ['x50', 2],
+                    ['x100', 2],
+                    ['x1000', 1]
+
                 ])
             };
 
